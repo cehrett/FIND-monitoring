@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CUSUM Dashboard - Maduro_YT_comment_test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        a { color: inherit; }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header h1 { margin: 0; font-size: 2.5em; }
+        .header .subtitle { opacity: 0.9; margin-top: 10px; font-size: 1.1em; }
+        .tab-bar { display: flex; gap: 12px; margin-bottom: 24px; }
+        .tab-button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            background: #e5e7eb;
+            cursor: pointer;
+            font-weight: 600;
+            color: #374151;
+        }
+        .tab-button.active { background: #2563eb; color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+        }
+        .stat-card h3 { margin: 0 0 15px 0; color: #333; font-size: 1.1em; }
+        .stat-value { font-size: 2em; font-weight: bold; color: #667eea; margin-bottom: 10px; }
+        .stat-label { color: #666; font-size: 0.9em; }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; margin-right: 5px; }
+        .high-severity { background-color: #ff4757; color: white; }
+        .medium-severity { background-color: #ffa502; color: white; }
+        .low-severity { background-color: #26de81; color: white; }
+        .panel { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        .panel h3 { margin: 0 0 20px 0; color: #333; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
+        .panel-subtitle { color: #6b7280; font-size: 0.95em; margin-top: -8px; margin-bottom: 12px; }
+        .recent-anomaly { background-color: #fff5f5; border: 1px solid #fed7d7; border-radius: 6px; padding: 15px; color: #742a2a; }
+        .table-wrapper { overflow-x: auto; }
+        .alert-table { width: 100%; border-collapse: collapse; min-width: 960px; }
+        .alert-table th, .alert-table td { padding: 8px 10px; border-bottom: 1px solid #e5e7eb; text-align: center; font-size: 0.9em; }
+        .alert-table th { background-color: #f3f4f6; position: sticky; top: 0; z-index: 1; }
+        .alert-table tbody tr:nth-child(even) { background-color: #f9fafb; }
+        .oi-cell { text-align: left; font-weight: 600; white-space: nowrap; }
+        .oi-link { color: #2563eb; text-decoration: none; }
+        .oi-link:hover { text-decoration: underline; }
+        .total-cell { font-weight: 700; }
+        .count-zero { color: #9ca3af; }
+        .count-low { color: #047857; font-weight: 600; }
+        .count-medium { color: #d97706; font-weight: 600; }
+        .count-high { color: #b91c1c; font-weight: 700; }
+        .network-controls { display: flex; align-items: center; gap: 12px; font-size: 0.95em; margin-bottom: 15px; }
+        .network-controls input[type=range] { flex: 1; }
+        .network-graph { width: 100%; height: 520px; background: white; border: 1px solid #e5e7eb; border-radius: 8px; }
+        .network-detail { background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; font-size: 0.92em; margin-top: 15px; }
+        .network-empty { padding: 20px; border: 1px dashed #d1d5db; border-radius: 8px; background: #f9fafb; color: #6b7280; }
+        .footer { text-align: center; margin-top: 40px; padding: 20px; color: #666; border-top: 1px solid #eee; }
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            body { padding: 12px; }
+            .alert-table { min-width: 700px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>CUSUM Monitoring Dashboard</h1>
+        <div class="subtitle">Topic: <strong>Maduro_YT_comment_test</strong> | YouTube comments on selected news channels</div>
+        <div class="subtitle">Last Updated: 2025-11-24 13:11:24 UTC | Window: 2025-11-23 – 2025-11-23</div>
+    </div>
+
+    <div class="tab-bar">
+        <button class="tab-button active" data-tab="overview">Overview</button>
+        <button class="tab-button" data-tab="networks">Networks</button>
+    </div>
+
+    <div id="tab-overview" class="tab-content active">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Posts Processed</h3>
+                <div class="stat-value">252</div>
+                <div class="stat-label">Source posts/videos analyzed</div>
+            </div>
+            <div class="stat-card">
+                <h3>Objects of Interest</h3>
+                <div class="stat-value">33</div>
+                <div class="stat-label">Hashtags, domains, mentions monitored</div>
+            </div>
+            <div class="stat-card">
+                <h3>Behavioral Flags</h3>
+                <div class="stat-value">14</div>
+                <div class="stat-label">Suspicious behavior patterns tracked</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Alerts (last 14 days)</h3>
+                <div class="stat-value">3</div>
+                <div class="stat-label">Aggregated across all monitored OIs</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Anomalies</h3>
+                <div class="stat-value">3</div>
+                <div class="stat-label">Suspicious patterns detected</div>
+            </div>
+            <div class="stat-card">
+                <h3>Severity Breakdown</h3>
+                <div style="margin-bottom: 10px;">
+        <span class="badge high-severity">High: 0</span>
+        <span class="badge medium-severity">Medium: 0</span>
+        <span class="badge low-severity">Low: 3</span>
+        </div>
+                <div class="stat-label">Current alert distribution</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h3>Alert Matrix (last 14 days)</h3>
+            <p class="panel-subtitle">Coverage: 2025-11-23 – 2025-11-23. Click an Object of Interest to open its detail page (top 20 by alert volume).</p>
+            
+        <div class="table-wrapper">
+            <table class="alert-table">
+                <thead>
+                    <tr>
+                        <th>Object of Interest</th>
+                        <th>emoji</th><th>repeater</th><th>baby</th><th>hyper</th><th>flood</th><th>first</th><th>egg</th><th>reply_er</th><th>low_follower</th><th>odd_client</th><th>rt_er</th><th>spike</th><th>question</th><th>web_app</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><th scope="row" class="oi-cell"><a href="Maduro_YT_comment_test_oi_ojala-lo-domains.html" class="oi-link">ojala..lo_domains</a></th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-medium">3</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-medium">3</td></tr><tr><th scope="row" class="oi-cell">#contrapoder30_hashtags</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">#contrapoder_hashtags</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">#crisisvenezolana_hashtags</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">#dictaduravenezolana_hashtags</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">#donaldtrump_hashtags</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">#edmundogonzalez_hashtags</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">#eeuu_hashtags</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">#estebanhernandez_hashtags</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">#joseantoniocolina_hashtags</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">#madurodialogo_hashtags</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">#marcorubio_hashtags</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">#narcoregimen_hashtags</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">#nicolasmaduro_hashtags</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">#noticiasvenezuela_hashtags</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">#operacionantidrogas_hashtags</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">#politicainternacional_hashtags</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">#presospoliticos_hashtags</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">#trumpmaduro_hashtags</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">#venezuela_hashtags</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">...pesimo_domains</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">...su_domains</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">...tiene_domains</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">algo.pir_domains</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">cabello..lo_domains</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">dios..no_domains</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">esto...es_domains</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">miami..colina..sirve_domains</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">mula..to_domains</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">pasar...ni_domains</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">pulso..iguale_domains</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">solo..eres_domains</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr><tr><th scope="row" class="oi-cell">venezolano...pobre_domains</th><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="count-zero">0</td><td class="total-cell count-zero">0</td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+        </div>
+
+        <div class="panel">
+            <h3>Most Recent Anomaly</h3>
+            
+            <div class="recent-anomaly">
+                <strong>ojala..lo_domains</strong> (first)
+                <br>Score: 4.699 at 2025-11-23 19:26:01
+            </div>
+            
+        </div>
+
+        <div class="panel">
+            <h3>Interactive CUSUM Analysis (last 14 days)</h3>
+            <div>                        <script type="text/javascript">window.PlotlyConfig = {MathJaxConfig: 'local'};</script>
+        <script charset="utf-8" src="https://cdn.plot.ly/plotly-3.1.0.min.js" integrity="sha256-Ei4740bWZhaUTQuD6q9yQlgVCMPBz6CZWhevDYPv93A=" crossorigin="anonymous"></script>                <div id="0db14928-4c28-4504-bd43-8c7b32ff84a8" class="plotly-graph-div" style="height:600px; width:100%;"></div>            <script type="text/javascript">                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("0db14928-4c28-4504-bd43-8c7b32ff84a8")) {                    Plotly.newPlot(                        "0db14928-4c28-4504-bd43-8c7b32ff84a8",                        [{"line":{"color":"blue"},"mode":"lines","name":"ojala..lo_domains-first","showlegend":false,"x":["2025-11-23T19:26:00+00:00","2025-11-23T19:26:01+00:00","2025-11-23T19:26:01+00:00","2025-11-23T19:26:01+00:00","2025-11-23T19:26:01+00:00","2025-11-23T19:26:01+00:00","2025-11-23T19:26:01+00:00","2025-11-23T19:26:01+00:00","2025-11-23T19:26:01+00:00","2025-11-23T19:26:01+00:00","2025-11-23T19:26:01+00:00","2025-11-23T19:26:01+00:00","2025-11-23T19:26:01+00:00","2025-11-23T19:26:01+00:00","2025-11-23T19:26:01+00:00","2025-11-23T19:26:01+00:00","2025-11-23T19:26:01+00:00","2025-11-23T19:26:01+00:00","2025-11-23T19:26:01+00:00","2025-11-23T19:26:01+00:00"],"xaxis":"x","y":[0.0,0.9397590361445783,1.8795180722891567,2.819277108433735,3.7590361445783134,4.698795180722891,0.9397590361445783,1.8795180722891567,2.819277108433735,3.7590361445783134,4.698795180722891,0.9397590361445783,1.8795180722891567,2.819277108433735,3.7590361445783134,4.698795180722891,0.9397590361445783,1.8795180722891567,2.819277108433735,3.7590361445783134],"yaxis":"y","type":"scatter"},{"marker":{"color":"red","size":8,"symbol":"x"},"mode":"markers","name":"Alarms","showlegend":true,"x":["2025-11-23T19:26:01+00:00","2025-11-23T19:26:01+00:00","2025-11-23T19:26:01+00:00"],"xaxis":"x","y":[4.698795180722891,4.698795180722891,4.698795180722891],"yaxis":"y","type":"scatter"}],                        {"annotations":[{"font":{"size":16},"showarrow":false,"text":"ojala..lo_domains - first","x":0.5,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"showarrow":false,"text":"Threshold (4.0)","x":1,"xanchor":"right","xref":"x domain","y":4.016064257028113,"yanchor":"bottom","yref":"y"}],"height":600,"shapes":[{"line":{"color":"red","dash":"dash"},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":4.016064257028113,"y1":4.016064257028113,"yref":"y"}],"showlegend":true,"template":{"data":{"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"choropleth":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"choropleth"}],"contourcarpet":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"contourcarpet"}],"contour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"contour"}],"heatmap":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"heatmap"}],"histogram2dcontour":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2dcontour"}],"histogram2d":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"histogram2d"}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"mesh3d":[{"colorbar":{"outlinewidth":0,"ticks":""},"type":"mesh3d"}],"parcoords":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"parcoords"}],"pie":[{"automargin":true,"type":"pie"}],"scatter3d":[{"line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatter3d"}],"scattercarpet":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattercarpet"}],"scattergeo":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergeo"}],"scattergl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattergl"}],"scattermapbox":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermapbox"}],"scattermap":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scattermap"}],"scatterpolargl":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolargl"}],"scatterpolar":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterpolar"}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"scatterternary":[{"marker":{"colorbar":{"outlinewidth":0,"ticks":""}},"type":"scatterternary"}],"surface":[{"colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"type":"surface"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}]},"layout":{"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"autotypenumbers":"strict","coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]],"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]},"colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"geo":{"bgcolor":"white","lakecolor":"white","landcolor":"#E5ECF6","showlakes":true,"showland":true,"subunitcolor":"white"},"hoverlabel":{"align":"left"},"hovermode":"closest","mapbox":{"style":"light"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","gridwidth":2,"linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white"}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"ternary":{"aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"bgcolor":"#E5ECF6","caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"title":{"x":0.05},"xaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2},"yaxis":{"automargin":true,"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","zerolinewidth":2}}},"title":{"text":"CUSUM Analysis (Timestamp-Based X-Axis)","x":0.5},"xaxis":{"anchor":"y","domain":[0.0,1.0],"title":{"text":"Timestamp"}},"yaxis":{"anchor":"x","domain":[0.0,1.0],"title":{"text":"CUSUM Score"}}},                        {"responsive": true}                    )                };            </script>        </div>
+        </div>
+    </div>
+
+    <div id="tab-networks" class="tab-content">
+        
+    <div class="panel">
+        <h3>Coordination Network</h3>
+        <div class="network-empty">No coordination network data available. Run the network builder to populate this tab.</div>
+    </div>
+    
+    </div>
+
+    <div class="footer">
+        <p>FIND Real-Time CUSUM Monitoring System | Generated: 2025-11-24 13:11:41 UTC</p>
+        <p>Dashboard auto-refreshes when new data is processed</p>
+    </div>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+    (function() {
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+        let currentMin = null;
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                tabButtons.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                button.classList.add('active');
+                const target = button.getAttribute('data-tab');
+                const targetEl = document.getElementById('tab-' + target);
+                if (targetEl) { targetEl.classList.add('active'); }
+                if (target === 'networks') {
+                    setTimeout(() => {
+                        resizeSvg();
+                        const effectiveMin = (currentMin !== null) ? currentMin : (networkData.edge_min_weight || 0);
+                        renderGraph(effectiveMin);
+                    }, 0);
+                }
+            });
+        });
+
+        const networkData = null;
+        const graphContainer = document.getElementById('network-graph');
+        const detailEl = document.getElementById('network-detail');
+        const slider = document.getElementById('network-min-weight');
+        const sliderLabel = document.getElementById('network-min-weight-label');
+
+        if (!graphContainer || !networkData || !networkData.edges || !networkData.edges.length) {
+            if (slider) slider.disabled = true;
+            if (sliderLabel) sliderLabel.textContent = 'N/A';
+            return;
+        }
+
+        const svg = d3.select(graphContainer).append('svg');
+
+        function resizeSvg() {
+            svg.attr('width', graphContainer.clientWidth);
+            svg.attr('height', graphContainer.clientHeight);
+        }
+
+        resizeSvg();
+        window.addEventListener('resize', () => {
+            resizeSvg();
+            if (currentMin !== null) {
+                renderGraph(currentMin);
+            }
+        });
+
+        currentMin = slider ? Number(slider.value) : (networkData.edge_min_weight || 0);
+        if (sliderLabel) sliderLabel.textContent = currentMin.toFixed(2);
+
+        if (slider) {
+            slider.addEventListener('input', () => {
+                currentMin = Number(slider.value);
+                if (sliderLabel) sliderLabel.textContent = currentMin.toFixed(2);
+                renderGraph(currentMin);
+            });
+        }
+
+        function renderGraph(minWeight) {
+            svg.selectAll('*').remove();
+            const edges = networkData.edges
+                .filter(edge => edge.weight >= minWeight)
+                .map(edge => Object.assign({}, edge));
+            const nodeIds = new Set();
+            edges.forEach(edge => {
+                nodeIds.add(edge.source);
+                nodeIds.add(edge.target);
+            });
+            const nodes = networkData.nodes
+                .filter(node => nodeIds.has(node.id))
+                .map(node => Object.assign({}, node));
+
+            if (!nodes.length) {
+                if (detailEl) detailEl.innerHTML = '<p>No edges meet the selected threshold.</p>';
+                return;
+            }
+
+            const width = graphContainer.clientWidth;
+            const height = graphContainer.clientHeight;
+            if (!width || !height) {
+                return;
+            }
+            const linkForce = d3.forceLink(edges).id(d => d.id).distance(d => 220 / Math.max(d.weight, 0.1));
+            const simulation = d3.forceSimulation(nodes)
+                .force('link', linkForce)
+                .force('charge', d3.forceManyBody().strength(-180))
+                .force('center', d3.forceCenter(width / 2, height / 2))
+                .force('collide', d3.forceCollide().radius(() => 28));
+
+            const weightExtent = d3.extent(edges, edge => edge.weight);
+            const weightScale = d3.scaleLinear().domain(weightExtent).range([2, 6]);
+            const sizeExtent = d3.extent(nodes, node => node.total_weight || 1);
+            const radiusScale = d3.scaleLinear().domain(sizeExtent).range([10, 24]);
+
+            const link = svg.append('g')
+                .attr('stroke', '#cbd5f5')
+                .attr('stroke-opacity', 0.8)
+                .selectAll('line')
+                .data(edges)
+                .enter()
+                .append('line')
+                .attr('stroke-width', d => weightScale(d.weight) || 2.5)
+                .style('cursor', 'pointer')
+                .on('click', (_, d) => showEdgeDetail(d));
+
+            const node = svg.append('g')
+                .selectAll('circle')
+                .data(nodes)
+                .enter()
+                .append('circle')
+                .attr('r', d => radiusScale(d.total_weight || 1))
+                .attr('fill', '#2563eb')
+                .attr('stroke', '#1d4ed8')
+                .attr('stroke-width', 1.5)
+                .style('cursor', 'pointer')
+                .on('click', (_, d) => showNodeDetail(d))
+                .call(d3.drag()
+                    .on('start', dragstarted)
+                    .on('drag', dragged)
+                    .on('end', dragended));
+
+            const labels = svg.append('g')
+                .selectAll('text')
+                .data(nodes)
+                .enter()
+                .append('text')
+                .attr('font-size', '11px')
+                .attr('fill', '#111827')
+                .attr('dominant-baseline', 'middle')
+                .attr('text-anchor', 'middle')
+                .style('pointer-events', 'none')
+                .text(d => (d.label && d.label.length) ? d.label : d.id);
+
+            simulation.on('tick', () => {
+                link
+                    .attr('x1', d => d.source.x)
+                    .attr('y1', d => d.source.y)
+                    .attr('x2', d => d.target.x)
+                    .attr('y2', d => d.target.y);
+                node
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y);
+                labels
+                    .attr('x', d => d.x)
+                    .attr('y', d => d.y - radiusScale(d.total_weight || 1) - 4);
+            });
+
+            function dragstarted(event, d) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            }
+
+            function dragged(event, d) {
+                d.fx = event.x;
+                d.fy = event.y;
+            }
+
+            function dragended(event, d) {
+                if (!event.active) simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            }
+
+            function showNodeDetail(nodeData) {
+                if (!detailEl) return;
+                const profile = nodeData.profile || [];
+                const hasLabel = nodeData.label && nodeData.label.length && nodeData.label !== nodeData.id;
+                const displayLabel = hasLabel ? nodeData.label : nodeData.id;
+                const totalWeight = (typeof nodeData.total_weight === 'number' ? nodeData.total_weight : 0);
+                const totalPosts = Number.isFinite(nodeData.total_posts) ? nodeData.total_posts : 0;
+                let html = '<h4>Account: ' + displayLabel + '</h4>';
+                if (hasLabel) {
+                    html += '<p>UID: ' + nodeData.id + '</p>';
+                }
+                html += '<p>Total weight: ' + totalWeight.toFixed(2) + ' | Degree: ' + nodeData.degree + ' | Total posts: ' + totalPosts + '</p>';
+                if (profile.length) {
+                    html += '<h5>Top focus areas</h5><ul>';
+                    profile.forEach(item => {
+                        const label = item.oi + ':' + item.flag + ' (' + item.weight.toFixed(2) + ')';
+                        const alert = item.last_alert ? ' — last alert ' + item.last_alert : '';
+                        const posts = Number.isFinite(item.posts) ? ' — posts ' + item.posts : '';
+                        html += '<li>' + label + posts + alert + '</li>';
+                    });
+                    html += '</ul>';
+                } else {
+                    html += '<p>No recent focus areas within configured window.</p>';
+                }
+                detailEl.innerHTML = html;
+            }
+
+            function showEdgeDetail(edgeData) {
+                if (!detailEl) return;
+                const srcId = edgeData.source.id || edgeData.source;
+                const dstId = edgeData.target.id || edgeData.target;
+                let html = '<h4>Pair: ' + srcId + ' <-> ' + dstId + '</h4>';
+                html += '<p>Weight: ' + edgeData.weight.toFixed(2) + '</p>';
+                const keys = edgeData.shared_keys || [];
+                if (keys.length) {
+                    html += '<h5>Shared focus</h5><ul>';
+                    keys.forEach(item => {
+                        const alert = item.recent_alert ? ' — last alert ' + item.recent_alert : '';
+                        html += '<li>' + item.oi + ':' + item.flag + ' (' + item.weight.toFixed(2) + ')' + alert + '</li>';
+                    });
+                    html += '</ul>';
+                } else {
+                    html += '<p>No recorded shared keys.</p>';
+                }
+                detailEl.innerHTML = html;
+            }
+        }
+
+        if (graphContainer.clientWidth > 0 && graphContainer.clientHeight > 0) {
+            renderGraph(currentMin);
+        }
+    })();
+    </script>
+</body>
+</html>
